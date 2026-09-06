@@ -31,4 +31,15 @@ router.get('/:id', (req, res) => {
     }
 })
 
+router.post('/', (req, res) => {
+    const {title, completed} = req.body;
+    const todo = {
+        id: todos.length+1,
+        title, 
+        completed
+    }
+    todos.push(todo);
+    res.json(todos);
+})
+
 export default router;
