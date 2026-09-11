@@ -1,45 +1,44 @@
-import express from 'express';
-
+import express from "express";
 const router = express.Router();
 
 const todos = [
-    {
-        id: 1,
-        title: "Learn Express",
-        completed: false
-    },
-    {
-        id: 2,
-        title: "Build Todo API",
-        completed: false
-    }
+  {
+    id: 1,
+    title: "find internship",
+    status: "completed",
+  },
 ];
 
-router.get('/', (req, res) => {
-    res.json(todos);
+router.get("/", (req, res) => {
+  res.send(todos);
 });
 
-router.get('/:id', (req, res) => {
-    const id = Number(req.params.id);
-    const fileteredTodo = todos.find((todo) => (todo.id === id));
-    if(fileteredTodo){
-        res.json(fileteredTodo)
-    } else {
-        res.status(404).json({
-            message: "todo not found"
-        })
-    }
+router.post('/', (req, res) => {
+    const {title, status} = req.body;
+    const todo = {
+        id: todos.length + 1,
+        title: title,
+        status: status
+    };
+    todos.push(todo);
+    res.send(todo);
 })
 
-router.post('/', (req, res) => {
-    const {title, completed} = req.body;
-    const todo = {
-        id: todos.length+1,
-        title, 
-        completed
-    }
-    todos.push(todo);
-    res.json(todos);
+router.put('/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const {title, status} = req.body;
+  const todoId = todos.findIndex((todo) => todo.id === id);
+  if(todoId == -1) {
+    return res.status(404).json({
+      message: "Id not found"
+    });
+  }
+  todos[todoId] = {
+    id: id,
+    title: title,
+    status: status
+  }
+  res.json(todos);
 })
 
 export default router;
