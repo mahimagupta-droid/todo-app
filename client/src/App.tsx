@@ -1,122 +1,171 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+type todoTypes = {
+  _id: string;
+  title: string;
+  status: string;
+};
+
+export default function App() {
+  const [todos, setTodos] = useState<todoTypes[]>([]);
+  const [title, setTitle] = useState("");
+  const [status, setStatus] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [editingTodoId, setEditingTodoId] = useState("");
+  const [error, setError] = useState("");
+
+  const fetchTodos = async () => {
+    const response = await fetch("http://localhost:3000/todo");
+    if (response.ok) {
+      const reqBody = await response.json();
+      setTodos(reqBody);
+      setError("")
+    } else {
+      setError(response.statusText)
+    }
+  };
+
+  const postTodo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const response = await fetch("http://localhost:3000/todo", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title,
+        status,
+      }),
+    });
+    if (response.ok) {
+      fetchTodos();
+      setTitle("");
+      setStatus("");
+    } else {
+      console.log("error: ", response.status, response.statusText)
+    }
+  };
+
+  const deleteTodo = async (id: string) => {
+    const response = await fetch(`http://localhost:3000/todo/${id}`, {
+      method: "DELETE",
+    });
+    if (response.ok) {
+        fetchTodos();
+    } else {
+      console.log("error: ", response.status, response.statusText)
+    }
+  };
+
+  const updateTodo = async (id: string) => {
+    const response = await fetch(`http://localhost:3000/todo/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title,
+        status,
+      }),
+    });
+    if (response.ok) {
+        fetchTodos();
+    } else {
+      console.log("error: ", response.status, response.statusText)
+    }
+  };
+
+  useEffect(() => {
+    fetchTodos();
+  }, []);
+
+  if (editing == true) {
+    return (
+      <div style={{ marginTop: "2px" }}>
+        <form onSubmit={() => updateTodo(editingTodoId)}>
+          <div>
+            <input
+              onChange={(e) => {
+                setTitle(e.target.value);
+              }}
+              id="title"
+              value={title}
+            />
+            <label>Title</label>
+          </div>
+          <div>
+            <input
+              onChange={(e) => {
+                setStatus(e.target.value);
+              }}
+              id="status"
+              value={status}
+            />
+            <label>Status</label>
+          </div>
+          <button type="submit">UPDATE</button>
+        </form>
+      </div>
+    );
+  }
+
+  if(error) {
+    return <p>{error}</p>
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    <div>
+      <div>
+        <h1>Todo app</h1>
+        <h2>Get requests</h2>
+        {todos.map((todo) => (
+          <div className="todo" key={todo._id}>
+            <p>title: {todo.title}</p>
+            <p>status: {todo.status}</p>
+            <button
+              onClick={() => {
+                deleteTodo(todo._id);
+              }}
+            >
+              DELETE
+            </button>
+            <button
+              onClick={() => {
+                setEditing(true);
+                setEditingTodoId(todo._id);
+              }}
+            >
+              UPDATE
+            </button>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: "2px" }}>
+        <form onSubmit={postTodo}>
+          <div>
+            <input
+              onChange={(e) => {
+                setTitle(e.target.value);
+              }}
+              id="title"
+              value={title}
+            />
+            <label>Title</label>
+          </div>
+          <div>
+            <input
+              onChange={(e) => {
+                setStatus(e.target.value);
+              }}
+              id="status"
+              value={status}
+            />
+            <label>Status</label>
+          </div>
+          <button type="submit">POST</button>
+        </form>
+      </div>
+    </div>
+  );
 }
-
-export default App

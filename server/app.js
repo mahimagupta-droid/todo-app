@@ -1,8 +1,10 @@
+import cors from 'cors';
 import express from 'express';
-import todoRouter from './routes/todo.js'
-const app = express();
+import todoRouterHandler from './routes/todo.js'
 
+const app = express();
 app.use(express.json());
-app.use('/todo', todoRouter);
+app.use(cors());
+app.use('/todo', todoRouterHandler)
 
 export default app;
